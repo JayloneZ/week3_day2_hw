@@ -94,10 +94,16 @@ def self.delete(id)
   end
 
   def self.find(id)
-    for bounty in @bounties_hash
-     if bounty.id == id
-        return bounty
-      end
-    end
+    db = PG.connect({
+      dbname: 'bounty_hunters',
+      host: 'localhost'
+      })
+    sql = "SELECT * FROM bounty WHERE id = $1"
+    values = [id]
+    db.prepare("find", sql)
+    results_array = db.exec_prepared("find", values)
+    bounty_hash = results_array[0]
+    bounty = Bounty.new(bounty_hash)
+    return bounty
   end
 end
