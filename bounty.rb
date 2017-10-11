@@ -1,7 +1,8 @@
 require 'pg'
 
 class Bounty
-attr_accessor :id, :name, :species, :bounty_value, :danger_level
+attr_reader :id
+attr_accessor :name, :species, :bounty_value, :danger_level, :bounties_hash
 def initialize(options)
 @id = options['id'].to_i if options['id']
 @name = options['name']
@@ -20,8 +21,9 @@ def self.show_all
     values = []
     db.prepare("all", sql)
     result = db.exec_prepared("all", values)
-    bounty2 = result.map {|bounty| Bounty.new(bounty)}
-    return bounty2
+    db.close()
+    @bounties_hash = result.map {|bounty| Bounty.new(bounty)}
+    return @bounties_hash
 
 end
 
@@ -72,8 +74,7 @@ def self.delete(id)
       host: 'localhost'
       })
       sql = "
-      UPDATE bounty
-      SET (
+      UPDATE bounty SET (
         name,
         species,
         bounty_value,
@@ -84,11 +85,19 @@ def self.delete(id)
         $2,
         $3,
         $4
-      )
-        WHERE id = $5"
-      values = [@name, @species, @bounty_value, @danger_level, @id]
+      ) "
+
+      values = [@name, @species, @bounty_value, @danger_level]
       db.prepare("update", sql)
       db.exec_prepared("update", values)
       db.close()
+  end
+
+  def self.find(id)
+    for bounty in @bounties_hash
+     if bounty.id == id
+        return bounty
+      end
+    end
   end
 end
