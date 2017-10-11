@@ -102,6 +102,7 @@ def self.delete(id)
     values = [id]
     db.prepare("find", sql)
     results_array = db.exec_prepared("find", values)
+    db.close()
     bounty_hash = results_array[0]
     bounty = Bounty.new(bounty_hash)
     return bounty
